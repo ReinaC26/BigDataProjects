@@ -8,16 +8,13 @@ AUTH = ("neo4j", "HunterCollege")
 
 driver = GraphDatabase.driver(URI, auth=AUTH)
 
-# Load nodes from TSV file in batches of 5000 rows for faster import
+# Load nodes from TSV file
 def load_nodes():
     start_time = time.time()
     with driver.session() as session:
-        session.run("""
+        session.run(r"""
             LOAD CSV WITH HEADERS FROM 'file:///nodes.tsv' AS row FIELDTERMINATOR '\t'
-            CALL (row) {
-                MERGE (n:Node {id: row.id})
-                SET n.name = row.name, n.kind = row.kind
-            } IN TRANSACTIONS OF 5000 ROWS
+            MERGE (n:Node {id: row.id, name: row.name, kind: row.kind})
         """)
     print(f"Nodes loaded in {time.time() - start_time:.2f} seconds")
 
