@@ -94,8 +94,8 @@ def query2():
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage:")
-        print("  python3 neo4j_client.py load_data")
-        print("  python3 neo4j_client.py query2")
+        print("  python3 neo4j_query2.py load_data")
+        print("  python3 neo4j_query2.py query2")
         sys.exit(1)
     command = sys.argv[1]
     if command == "load_data":
