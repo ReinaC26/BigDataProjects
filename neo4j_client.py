@@ -21,7 +21,7 @@ def load_nodes():
         """)
     print(f"Nodes loaded in {time.time() - start_time:.2f} seconds")
 
-# Load edges from TSV file and process in batches
+# Load edges from TSV file and process in batches of 5000 rows
 def load_edges():
     start_time = time.time()
     batch_size = 5000
@@ -44,7 +44,7 @@ def load_edges():
             
     print(f"Edges loaded in {time.time() - start_time:.2f} seconds")
 
-# Helper function to load edge groups into neo4j
+# Helper function to load edge batches into neo4j
 def load_edge_batch(batch):
     # For each batch, group the edges by metaedge
     edge_groups = {}
