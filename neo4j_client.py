@@ -7,9 +7,10 @@ URI  = "neo4j://127.0.0.1:7687"
 AUTH = ("neo4j", "HunterCollege")
 
 driver = GraphDatabase.driver(URI, auth=AUTH)
-start = time.time()
 
+# Load nodes from TSV file in batches of 5000 rows for faster import
 def load_nodes():
+    start_time = time.time()
     with driver.session() as session:
         session.run("""
             LOAD CSV WITH HEADERS FROM 'file:///nodes.tsv' AS row FIELDTERMINATOR '\t'
@@ -18,8 +19,9 @@ def load_nodes():
                 SET n.name = row.name, n.kind = row.kind
             } IN TRANSACTIONS OF 5000 ROWS
         """)
-    print(f"Nodes loaded in {time.time() - start:.2f} seconds")
+    print(f"Nodes loaded in {time.time() - start_time:.2f} seconds")
 
+# Load edges from TSV file and process in batches
 def load_edges():
     start_time = time.time()
     batch_size = 5000
@@ -31,32 +33,33 @@ def load_edges():
         for row in reader:
             current_batch.append(row)
             
-            # When we hit the batch size, process it and clear memory
+            # When we hit the batch size, load it and clear memory
             if len(current_batch) >= batch_size:
-                process_edge_batch(current_batch)
+                load_edge_batch(current_batch)
                 current_batch = []
         
-        # Process the final remaining rows
+        # Load the remaining rows
         if current_batch:
-            process_edge_batch(current_batch)
+            load_edge_batch(current_batch)
             
     print(f"Edges loaded in {time.time() - start_time:.2f} seconds")
 
-# Helper function to group batch of edges
-def process_edge_batch(batch):
-    buckets = {}
+# Helper function to load edge groups into neo4j
+def load_edge_batch(batch):
+    # For each batch, group the edges by metaedge
+    edge_groups = {}
     for row in batch:
-        buckets.setdefault(row["metaedge"], []).append({
-            "src": row["source"],
-            "tgt": row["target"]
+        edge_groups.setdefault(row["metaedge"], []).append({
+            "source": row["source"],
+            "target": row["target"]
         })
         
     with driver.session() as session:
-        for metaedge, edges in buckets.items():
+        for metaedge, edges in edge_groups.items():
             session.run(f"""
                 UNWIND $rows AS row
-                MATCH (a:Node {{id: row.src}})
-                MATCH (b:Node {{id: row.tgt}})
+                MATCH (a:Node {{id: row.source}})
+                MATCH (b:Node {{id: row.target}})
                 MERGE (a)-[:`{metaedge}`]->(b)
             """, rows=edges)
 
@@ -64,6 +67,7 @@ def process_edge_batch(batch):
 # - case 1: where compound upregulate gene and anatomy downregulate gene
 # - case 2: where compound downregulate gene and anatomy upregulate gene
 def query2():
+    start_time = time.time()
     cypher = """
         MATCH (c:Node {kind: 'Compound'})-[:CuG]->(g:Node {kind: 'Gene'})<-[:AdG]-(a:Node {kind: 'Anatomy'})<-[:DlA]-(d:Node {kind: 'Disease'})
         WHERE NOT EXISTS { (c)-[:CtD]->(d) }
@@ -84,7 +88,7 @@ def query2():
         for record in result:
             print(f"Compound: {record['compound']}, Disease: {record['disease']}, Mechanism: {record['mechanism']}")
     
-    print(f"Query 2 completed in {time.time() - start:.2f} seconds")
+    print(f"Query 2 completed in {time.time() - start_time:.2f} seconds")
 
 
 if __name__ == "__main__":
