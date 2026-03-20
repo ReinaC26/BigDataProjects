@@ -72,21 +72,21 @@ def query2():
         MATCH (c:Node {kind: 'Compound'})-[:CuG]->(g:Node {kind: 'Gene'})<-[:AdG]-(a:Node {kind: 'Anatomy'})<-[:DlA]-(d:Node {kind: 'Disease'})
         WHERE NOT EXISTS { (c)-[:CtD]->(d) }
           AND NOT EXISTS { (c)-[:CpD]->(d) }
-        RETURN DISTINCT c.name AS compound, d.name AS disease, 'Compound upregulates/Anatomy downregulates' AS mechanism
+        RETURN DISTINCT c.name AS compound, d.name AS disease, 'Compound upregulates/Anatomy downregulates' AS case
  
         UNION
  
         MATCH (c:Node {kind: 'Compound'})-[:CdG]->(g:Node {kind: 'Gene'})<-[:AuG]-(a:Node {kind: 'Anatomy'})<-[:DlA]-(d:Node {kind: 'Disease'})
         WHERE NOT EXISTS { (c)-[:CtD]->(d) }
           AND NOT EXISTS { (c)-[:CpD]->(d) }
-        RETURN DISTINCT c.name AS compound, d.name AS disease, 'Compound downregulates/Anatomy upregulates' AS mechanism
+        RETURN DISTINCT c.name AS compound, d.name AS disease, 'Compound downregulates/Anatomy upregulates' AS case
  
         ORDER BY compound
     """
     with driver.session() as session:
         result = session.run(cypher)
         for record in result:
-            print(f"Compound: {record['compound']}, Disease: {record['disease']}, Mechanism: {record['mechanism']}")
+            print(f"Compound: {record['compound']}, Disease: {record['disease']}, Case: {record['case']}")
     
     print(f"Query 2 completed in {time.time() - start_time:.2f} seconds")
 
