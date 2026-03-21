@@ -4,8 +4,8 @@ from neo4j_query2 import load_nodes as neo4j_load_nodes, load_edges as neo4j_loa
 if __name__ == "__main__":
     while True:
         print("\nPick an option to continue:")
-        print("  1. Query 1 (Disease Lookup)")
-        print("  2. Query 2 (New Treatments)")
+        print("  1. Query 1 - Lookup a disease using Disease ID")
+        print("  2. Query 2 - Find all compounds that can treat a new disease")
         print("  3. Exit")
         
         option = input("\nEnter option (1 or 2 or 3): ").strip()
