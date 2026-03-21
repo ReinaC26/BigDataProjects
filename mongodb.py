@@ -1,5 +1,4 @@
 # mongodb.py
-import sys # for handling CLI input
 import csv # for reading and parsing TSV file
 from pymongo import MongoClient 
 import time

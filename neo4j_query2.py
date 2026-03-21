@@ -1,6 +1,5 @@
 import time
 import csv
-import sys
 from neo4j import GraphDatabase
 
 URI  = "neo4j://127.0.0.1:7687"
@@ -86,5 +85,3 @@ def query2():
             print(f"Compound: {record['compound']}, Disease: {record['disease']}, Case: {record['case']}")
     
     print(f"Query 2 completed in {time.time() - start_time:.2f} seconds")
-
-
