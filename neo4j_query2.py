@@ -91,11 +91,11 @@ def query2():
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage:")
-        print("  python3 neo4j_query2.py load_data")
+        print("  python3 neo4j_query2.py create_db")
         print("  python3 neo4j_query2.py query2")
         sys.exit(1)
     command = sys.argv[1]
-    if command == "load_data":
+    if command == "create_db":
         load_nodes()
         load_edges()
     elif command == "query2":
