@@ -49,7 +49,11 @@ def load_nodes():
                     "name" : row["name"],
                     "kind" : row["kind"]
                 }
-            collection.insert_one(doc) #insert document into mongoDB
+            collection.update_one(
+                {"id" : row["id"]}, #matches id
+                {"$setOnInsert": doc}, #sets fields on first insert
+                upsert= True #if doc exists, update it. If not, insert as new
+            ) #insert document into mongoDB
     print(f"Nodes loaded in {time.time() - start_time:.2f} seconds")
 
     
@@ -79,23 +83,24 @@ def load_edges():
             # CtD: Compound treats Disease
             if metaedge == "CtD" :
                 c_name = get_name(source) #get compound name from ID
-                # find disease doc and add compound to TREATS list in disease doc
-                collection.update_one({"id": target}, {"$push": {"TREATS": c_name}})
+                # find disease doc and add compound to TREATS list in disease doc. 
+                # $addToSet instead of $push to avoid duplicate edge
+                collection.update_one({"id": target}, {"$addToSet": {"TREATS": c_name}})
             
             # Compound palliates Disease: store compound name in disease doc , under "PALLIATES"
             elif metaedge == "CpD" :
                 c_name = get_name(source)
-                collection.update_one({"id": target}, {"$push": {"PALLIATES": c_name}})
+                collection.update_one({"id": target}, {"$addToSet": {"PALLIATES": c_name}})
             
             # Disease associates Gene aka gene cause disease: store gene name in disease doc , under "ASSOCIATES"
             elif metaedge == "DaG" :
                 g_name = get_name(target)
-                collection.update_one({"id": source}, {"$push": {"ASSOCIATES": g_name}})
+                collection.update_one({"id": source}, {"$addToSet": {"ASSOCIATES": g_name}})
             
             # Disease localises Anatomy aka disease occurs in this location of body: store anatomy name in disease doc , under "LOCALIZES"
             elif metaedge == "DlA" :
                 a_name = get_name(target)
-                collection.update_one({"id": source}, {"$push": {"LOCALIZES": a_name}})
+                collection.update_one({"id": source}, {"$addToSet": {"LOCALIZES": a_name}})
     
     print(f"Edges loaded in {time.time() - start_time:.2f} seconds")
 
