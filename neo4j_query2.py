@@ -1,6 +1,5 @@
 import time
 import csv
-import sys
 from neo4j import GraphDatabase
 
 URI  = "neo4j://127.0.0.1:7687"
@@ -86,19 +85,3 @@ def query2():
             print(f"Compound: {record['compound']}, Disease: {record['disease']}, Case: {record['case']}")
     
     print(f"Query 2 completed in {time.time() - start_time:.2f} seconds")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage:")
-        print("  python3 neo4j_query2.py create_db")
-        print("  python3 neo4j_query2.py query2")
-        sys.exit(1)
-    command = sys.argv[1]
-    if command == "create_db":
-        load_nodes()
-        load_edges()
-    elif command == "query2":
-        query2()
-
-    driver.close()

@@ -1,5 +1,4 @@
 # mongodb.py
-import sys # for handling CLI input
 import csv # for reading and parsing TSV file
 from pymongo import MongoClient 
 import time
@@ -128,19 +127,3 @@ def query1(disease_id):
         print(" -", name)
     print(f"Query 1 completed in {time.time() - start_time:.2f} seconds")    
     
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage:")
-        print("  python mongodb.py create_db")
-        print("  python mongodb.py query1 <DiseaseID>")
-        sys.exit()
-
-    command = sys.argv[1]
-    if command == "create_db":
-        load_nodes()
-        load_edges()
-    elif command == "query1":
-        if len(sys.argv) < 3:
-            print("Please provide a disease ID")
-            sys.exit()
-        query1(sys.argv[2])
