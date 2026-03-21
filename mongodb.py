@@ -2,6 +2,8 @@
 import sys # for handling CLI input
 import csv # for reading and parsing TSV file
 from pymongo import MongoClient 
+import time
+
 
 # connect to local MongoDB instance
 client = MongoClient("mongodb://localhost:27017/")
@@ -22,7 +24,8 @@ def get_name(node_id):
 
 def load_nodes():
     """Load nodes.tsv into MongoDB"""
-    
+    start_time = time.time()
+
     #open tsv file containing node data
     with open("data/nodes.tsv", "r") as f:
         reader = csv.DictReader(f, delimiter="\t") #reads tsv as dictionary rows , each row is a dictionary
@@ -30,18 +33,26 @@ def load_nodes():
         #iterates through each row in file
         for row in reader: 
             #create a document to insert into mongoDB
-            doc = {
-                "id" : row["id"],
-                "name" : row["name"],
-                "kind" : row["kind"],
-                #initializes relationship fields as empty lists (only for disease)
-                "TREATS" : [], #store name of compounds that treats this disease
-                "PALLIATES" : [], #compounds that palliates this disease
-                "ASSOCIATES" :[], # genes associated with this disease
-                "LOCALIZES" : [] # anatomy locations of this disease 
-            }
+            if row["kind"] == "Disease":
+                doc = {
+                    "id" : row["id"],
+                    "name" : row["name"],
+                    "kind" : row["kind"],
+                    #initializes relationship fields as empty lists (only for disease)
+                    "TREATS" : [], #store name of compounds that treats this disease
+                    "PALLIATES" : [], #compounds that palliates this disease
+                    "ASSOCIATES" :[], # genes associated with this disease
+                    "LOCALIZES" : [] # anatomy locations of this disease 
+                }
+            else: 
+                doc = {
+                    "id" : row["id"],
+                    "name" : row["name"],
+                    "kind" : row["kind"]
+                }
             collection.insert_one(doc) #insert document into mongoDB
-    print("Nodes loaded")
+    print(f"Nodes loaded in {time.time() - start_time:.2f} seconds")
+
     
 def load_edges():
     """ 
@@ -56,7 +67,7 @@ def load_edges():
         - longer load time: process each edge types we need and update disease doc 
         - shorter query time: perform only one lookup
     """
-    
+    start_time = time.time()
     with open("data/edges.tsv", "r") as f:
         reader = csv.DictReader(f, delimiter="\t")
         
@@ -87,10 +98,11 @@ def load_edges():
                 a_name = get_name(target)
                 collection.update_one({"id": source}, {"$push": {"LOCALIZES": a_name}})
     
-    print("Edges loaded")
+    print(f"Edges loaded in {time.time() - start_time:.2f} seconds")
 
 # query a disease and print its relationships    
 def query1(disease_id):
+    start_time = time.time()
     # retrieve disease document by its ID
     disease = collection.find_one({"id": disease_id})
     if disease is None:
@@ -114,7 +126,7 @@ def query1(disease_id):
     print("\nDisease occurs in these locations:")
     for name in disease.get("LOCALIZES", []):
         print(" -", name)
-        
+    print(f"Query 1 completed in {time.time() - start_time:.2f} seconds")    
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:
