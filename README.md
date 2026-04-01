@@ -1,4 +1,6 @@
 ## Project 1
+Link to report: 
+[Report](https://docs.google.com/document/d/19-s-TqtGGt06S83x9CpMVKc6PMBsF3vEUVvHFsKJHno/edit?tab=t.0)
 ### Query 1
 Given a disease id, obtain its correlated information from data.
 ### Query 2
